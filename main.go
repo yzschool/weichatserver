@@ -6,12 +6,15 @@ import (
 	"log"
 	"net/http"
 
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+
 	"github.com/julienschmidt/httprouter"
 )
 
 type Class struct {
 	ClassID        string   `json:"classID"`
-	Name           string   `json:"name"`
+	ClassName      string   `json:"className"`
 	ClassStartTime string   `json:"classStartTime"`
 	ClassEndTime   string   `json:"classEndTime"`
 	ClassPeroid    string   `json:"classPeroid"`
@@ -22,69 +25,102 @@ type Class struct {
 	Building       string   `json:"building"`
 	Latitude       float64  `json:"latitude"`
 	Longitude      float64  `json:"longitude"`
-	CreatedBy      string   `json:"createdBy"`
-	ContactTel     string   `json:"contactTel"`
-	CreatedTime    string   `json:"createdTime"`
-	LastUpdateTime string   `json:"lastUpdateTime"`
+	Creater        string   `json:"creater"`
+	CreaterOpenID  string   `json:"createrOpenID"`
+	CreaterTel     string   `json:"createrTel"`
+	CreatTime      string   `json:"creatTime"`
+	Grade          string   `json:"grade"`
+	TeacherTel     string   `json:"teacherTel"`
 	Price          string   `json:"price"`
-	Students       []string `json:"students"`
+	StudentsID     []string `json:"studentsID"`
 }
 
 type Student struct {
-	StudentID      string   `json:"studentID"`
-	Name           string   `json:"name"`
-	Phone          string   `json:"phone"`
-	Email          string   `json:"email"`
-	School         string   `json:"school"`
-	Grade          string   `json:"grade"`
-	Capibility     string   `json:"capibility"`
-	Address        string   `json:"address"`
-	Parent         string   `json:"parent"`
-	ParentPhone    string   `json:"parentPhone"`
-	Class          []string `json:"class"`
-	LastUpdateTime string   `json:"lastUpdateTime"`
+	StudentID      string `json:"studentID"`
+	Name           string `json:"name"`
+	Phone          string `json:"phone"`
+	StudentOpenID  string `json:"studentOpenID"`
+	Email          string `json:"email"`
+	School         string `json:"school"`
+	Grade          string `json:"grade"`
+	Capibility     string `json:"capibility"`
+	Address        string `json:"address"`
+	MotherName     string `json:"motherName"`
+	MotherPhone    string `json:"motherPhone"`
+	MotherOpenID   string `json:"motherOpenID"`
+	FatherName     string `json:"fatherName"`
+	FatherPhone    string `json:"fatherPhone"`
+	FatherOpenID   string `json:"fatherOpenID"`
+	LastUpdateTime string `json:"lastUpdateTime"`
 }
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprint(w, "Welcome!\n")
 }
 
+func ErrorWithJSON(w http.ResponseWriter, message string, code int) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(code)
+	fmt.Fprintf(w, "{message: %q}", message)
+}
+
+func ResponseWithJSON(w http.ResponseWriter, json []byte, code int) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(code)
+	w.Write(json)
+}
+
 func GetClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	class := Class{ClassID: "US123", Name: "English 1", ClassStartTime: "2017-07-15", ClassEndTime: "2017-07-30", City: "shenzhen", District: "futian", Building: "xiangmu", CreatedBy: "xiao li"}
-	b, err := json.Marshal(class)
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("class")
+
+	var classes []Class
+	err := c.Find(bson.M{}).All(&classes)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed get all classes: ", err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
+
+	respBody, err := json.MarshalIndent(classes, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
 func CreateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	//fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+	session := mgoSession.Copy()
+	defer session.Close()
 
+	var class Class
 	decoder := json.NewDecoder(r.Body)
-	var new_class Class
-	err := decoder.Decode(&new_class)
-
+	err := decoder.Decode(&class)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
+		return
+	}
+
+	c := session.DB("yzschool").C("class")
+
+	err = c.Insert(class)
+	if err != nil {
+		if mgo.IsDup(err) {
+			ErrorWithJSON(w, "Book with this ISBN already exists", http.StatusBadRequest)
+			return
+		}
+
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed insert book: ", err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Println(w, new_class)
-	//w.Write("success")
-	/*
-		decoder := json.NewDecoder(r.Body)
-		var t test_struct
-		err := decoder.Decode(&t)
-		if err != nil {
-			panic(err)
-		}
-		defer r.Body.Close()
-		log.Println(t.Test)
-	*/
+	w.WriteHeader(http.StatusCreated)
+
 }
 
 func GetStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -95,7 +131,21 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
 }
 
+var mgoSession *mgo.Session
+
 func main() {
+
+	session, err := mgo.Dial("localhost:27017")
+	if err != nil {
+		fmt.Println("connect to mongodb failure", err)
+		panic(err)
+	}
+	defer session.Close()
+
+	session.SetMode(mgo.Monotonic, true)
+	mgoSession = session
+	//ensureIndex(session)
+
 	router := httprouter.New()
 	router.GET("/", Index)
 
