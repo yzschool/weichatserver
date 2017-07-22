@@ -35,7 +35,7 @@ func ensureIndex(s *mgo.Session) {
 	c := session.DB("yzschool").C("class")
 
 	index := mgo.Index{
-		Key:        []string{"classID"},
+		Key:        []string{"classid"},
 		Unique:     true,
 		DropDups:   true,
 		Background: true,

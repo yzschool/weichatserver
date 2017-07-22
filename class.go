@@ -101,7 +101,7 @@ func CreateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	err = c.Insert(class)
 	if err != nil {
 		if mgo.IsDup(err) {
-			ErrorWithJSON(w, "Book with this ISBN already exists", http.StatusBadRequest)
+			ErrorWithJSON(w, "Book with this classid already exists", http.StatusBadRequest)
 			return
 		}
 
