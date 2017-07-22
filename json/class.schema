@@ -1,0 +1,111 @@
+Node
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "type": "object",
+  "properties": {
+    "classID": {
+      "type": "string",
+      "minLength": 1
+    },
+    "className": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classStartTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classEndTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classPeroid": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classLevel": {
+      "type": "string",
+      "minLength": 1
+    },
+    "city": {
+      "type": "string",
+      "minLength": 1
+    },
+    "district": {
+      "type": "string",
+      "minLength": 1
+    },
+    "building": {
+      "type": "string",
+      "minLength": 1
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "creater": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createrOpenID": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createrTel": {
+      "type": "string",
+      "minLength": 1
+    },
+    "creatTime": {
+      "type": "string",
+      "minLength": 1
+    },
+    "grade": {
+      "type": "string",
+      "minLength": 1
+    },
+    "teacherTel": {
+      "type": "string",
+      "minLength": 1
+    },
+    "price": {
+      "type": "string",
+      "minLength": 1
+    },
+    "studentsID": {
+      "type": "array",
+      "items": {
+        "required": [],
+        "properties": {}
+      }
+    }
+  },
+  "required": [
+    "classID",
+    "className",
+    "classStartTime",
+    "classEndTime",
+    "classPeroid",
+    "classTime",
+    "classLevel",
+    "city",
+    "district",
+    "building",
+    "latitude",
+    "longitude",
+    "creater",
+    "createrOpenID",
+    "createrTel",
+    "creatTime",
+    "grade",
+    "teacherTel",
+    "price",
+    "studentsID"
+  ]
+}
