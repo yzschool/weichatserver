@@ -32,7 +32,7 @@ func ensureIndex(s *mgo.Session) {
 	session := s.Copy()
 	defer session.Close()
 
-	c := session.DB("yszchool").C("class")
+	c := session.DB("yzschool").C("class")
 
 	index := mgo.Index{
 		Key:        []string{"classID"},
@@ -43,6 +43,7 @@ func ensureIndex(s *mgo.Session) {
 	}
 	err := c.EnsureIndex(index)
 	if err != nil {
+		fmt.Println("EnsureIndex in mongodb failure", err)
 		panic(err)
 	}
 }
