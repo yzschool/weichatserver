@@ -9,43 +9,43 @@ import (
 
 /*
 {
-  "studentID":"09882342",
+  "studentid":"09882342",
   "name":"张三",
   "phone":"13900000000",
-  "studentOpenID":"adsf2324sdfa",
+  "studentopenid":"adsf2324sdfa",
   "email":"aaa@163.com",
   "school":"实验小学",
   "grade":"三年级",
   "capibility":"优秀",
   "address":"福田小区",
-  "motherName":"张二",
-  "motherPhone":"13800000000",
-  "motherOpenID":"adsf2324sdfa",
-  "fatherName":"张二",
-  "fatherPhone":"13800000000",
-  "fatherOpenID":"adsf2324sdfa",
-  "lastUpdateTime":"2017-07-11"
+  "mothername":"张二",
+  "motherphone":"13800000000",
+  "motheropenid":"adsf2324sdfa",
+  "fathername":"张二",
+  "fatherphone":"13800000000",
+  "fatheropenid":"adsf2324sdfa",
+  "updatetime":"2017-07-11"
 }
 */
 
 /*Student is the GO struct for student JSON */
 type Student struct {
-	StudentID      string `json:"studentID"`
-	Name           string `json:"name"`
-	Phone          string `json:"phone"`
-	StudentOpenID  string `json:"studentOpenID"`
-	Email          string `json:"email"`
-	School         string `json:"school"`
-	Grade          string `json:"grade"`
-	Capibility     string `json:"capibility"`
-	Address        string `json:"address"`
-	MotherName     string `json:"motherName"`
-	MotherPhone    string `json:"motherPhone"`
-	MotherOpenID   string `json:"motherOpenID"`
-	FatherName     string `json:"fatherName"`
-	FatherPhone    string `json:"fatherPhone"`
-	FatherOpenID   string `json:"fatherOpenID"`
-	LastUpdateTime string `json:"lastUpdateTime"`
+	Studentid     string `json:"studentid"`
+	Name          string `json:"name"`
+	Phone         string `json:"phone"`
+	Studentopenid string `json:"studentopenid"`
+	Email         string `json:"email"`
+	School        string `json:"school"`
+	Grade         string `json:"grade"`
+	Capibility    string `json:"capibility"`
+	Address       string `json:"address"`
+	Mothername    string `json:"mothername"`
+	Motherphone   string `json:"motherphone"`
+	Motheropenid  string `json:"motheropenid"`
+	Fathername    string `json:"fathername"`
+	Fatherphone   string `json:"fatherphone"`
+	Fatheropenid  string `json:"fatheropenid"`
+	Updatetime    string `json:"updatetime"`
 }
 
 func GetStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
