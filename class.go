@@ -9,57 +9,60 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"time"
+
 	"github.com/julienschmidt/httprouter"
+	"github.com/nu7hatch/gouuid"
 )
 
 /*
 example JSON class
 {
-  "classID":"1202434354545",
-  "className":"yz english AA",
-  "classStartTime":"2017-07-11",
-  "classEndTime":"2017-09-11",
-  "classPeroid":"每周三晚上",
-  "classTime":"19:30-20:30",
-  "classLevel":"中等",
+  "classid":"1202434354545",
+  "classname":"yz english AA",
+  "starttime":"2017-07-11",
+  "endtime":"2017-09-11",
+  "peroid":"每周三晚上",
+  "classtime":"19:30-20:30",
+  "level":"中等",
   "city":"深圳",
   "district":"福田",
   "building":"香蜜湖小区",
   "latitude":114.026694,
   "longitude":22.549416,
   "creater":"xiao lee",
-  "createrOpenID":"adsf2324sdfa",
-  "createrTel":"13900000000",
-  "creatTime":"2017-07-01",
+  "openid":"adsf2324sdfa",
+  "tel":"13900000000",
+  "creattime":"2017-07-01",
   "grade":"三年纪",
-  "teacherTel":"13900000000",
+  "teachertel":"13900000000",
   "price":"1600",
-  "studentsID":["09882342", "09882342", "09882342"]
+  "studentsid":["09882342", "09882342", "09882342"]
 }
 */
 
 /*Class is GO struct for Class JSON */
 type Class struct {
-	ClassID        string   `json:"classID"`
-	ClassName      string   `json:"className"`
-	ClassStartTime string   `json:"classStartTime"`
-	ClassEndTime   string   `json:"classEndTime"`
-	ClassPeroid    string   `json:"classPeroid"`
-	ClassTime      string   `json:"classTime"`
-	ClassLevel     string   `json:"classLevel"`
-	City           string   `json:"city"`
-	District       string   `json:"district"`
-	Building       string   `json:"building"`
-	Latitude       float64  `json:"latitude"`
-	Longitude      float64  `json:"longitude"`
-	Creater        string   `json:"creater"`
-	CreaterOpenID  string   `json:"createrOpenID"`
-	CreaterTel     string   `json:"createrTel"`
-	CreatTime      string   `json:"creatTime"`
-	Grade          string   `json:"grade"`
-	TeacherTel     string   `json:"teacherTel"`
-	Price          string   `json:"price"`
-	StudentsID     []string `json:"studentsID"`
+	Classid    string   `json:"classid"`
+	Classname  string   `json:"classname"`
+	Starttime  string   `json:"starttime"`
+	Endtime    string   `json:"endtime"`
+	Peroid     string   `json:"peroid"`
+	Classtime  string   `json:"classtime"`
+	Level      string   `json:"level"`
+	City       string   `json:"city"`
+	District   string   `json:"district"`
+	Building   string   `json:"building"`
+	Latitude   float64  `json:"latitude"`
+	Longitude  float64  `json:"longitude"`
+	Creater    string   `json:"creater"`
+	Openid     string   `json:"openid"`
+	Tel        string   `json:"tel"`
+	Creattime  string   `json:"creattime"`
+	Grade      string   `json:"grade"`
+	Teachertel string   `json:"teachertel"`
+	Price      string   `json:"price"`
+	Studentsid []string `json:"studentsid"`
 }
 
 func GetClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -96,12 +99,21 @@ func CreateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
+	/* generate UUID for the class ID */
+	u4, err := uuid.NewV4()
+	if err != nil {
+		fmt.Println("error:", err)
+		return
+	}
+	class.Classid = u4.String()
+	class.Creattime = time.Now().String()
+
 	c := session.DB("yzschool").C("class")
 
 	err = c.Insert(class)
 	if err != nil {
 		if mgo.IsDup(err) {
-			ErrorWithJSON(w, "Book with this classid already exists", http.StatusBadRequest)
+			ErrorWithJSON(w, "Class with this classid already exists", http.StatusBadRequest)
 			return
 		}
 
@@ -125,14 +137,14 @@ func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	fmt.Println("GetClassByName classid is ", id)
 
 	var class Class
-	err := c.Find(bson.M{"classID": id}).One(&class)
+	err := c.Find(bson.M{"classid": id}).One(&class)
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Println("Failed find book: ", err)
 		return
 	}
 
-	if class.ClassID == "" {
+	if class.Classid == "" {
 		ErrorWithJSON(w, "Class not found", http.StatusNotFound)
 		return
 	}
@@ -161,7 +173,7 @@ func UpdateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	c := session.DB("yzschool").C("class")
 
-	err = c.Update(bson.M{"classID": id}, &class)
+	err = c.Update(bson.M{"classid": id}, &class)
 	if err != nil {
 		switch err {
 		default:
@@ -185,7 +197,7 @@ func DeleteClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	c := session.DB("yzschool").C("class")
 
-	err := c.Remove(bson.M{"classID": id})
+	err := c.Remove(bson.M{"classid": id})
 	if err != nil {
 		switch err {
 		default:
