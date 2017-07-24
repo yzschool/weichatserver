@@ -131,7 +131,7 @@ func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	session := mgoSession.Copy()
 	defer session.Close()
 
-	id := ps.ByName("clasid")
+	id := ps.ByName("classid")
 
 	c := session.DB("yzschool").C("class")
 	fmt.Println("GetClassByName classid is ", id)
