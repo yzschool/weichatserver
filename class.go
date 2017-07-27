@@ -127,14 +127,14 @@ func CreateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 }
 
-func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func GetClassByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	session := mgoSession.Copy()
 	defer session.Close()
 
 	id := ps.ByName("classid")
 
 	c := session.DB("yzschool").C("class")
-	fmt.Println("GetClassByName classid is ", id)
+	fmt.Println("GetClassByID classid is ", id)
 
 	var class Class
 	err := c.Find(bson.M{"classid": id}).One(&class)
@@ -145,6 +145,36 @@ func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	}
 
 	if class.Classid == "" {
+		ErrorWithJSON(w, "Class not found", http.StatusNotFound)
+		return
+	}
+
+	respBody, err := json.MarshalIndent(class, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
+}
+
+func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	classname := ps.ByName("classname")
+
+	c := session.DB("yzschool").C("class")
+	fmt.Println("GetClassByClassName classname is ", classname)
+
+	var class []Class
+	err := c.Find(bson.M{"classname": classname}).All(&class)
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed find book: ", err)
+		return
+	}
+
+	if class[0].Classname == "" {
 		ErrorWithJSON(w, "Class not found", http.StatusNotFound)
 		return
 	}
