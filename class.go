@@ -21,6 +21,7 @@ example JSON class
   "classid":"1202434354545",
   "classname":"yz english AA",
   "starttime":"2017-07-11",
+  "usertype":"男",
   "endtime":"2017-09-11",
   "peroid":"每周三晚上",
   "classtime":"19:30-20:30",
@@ -46,6 +47,7 @@ type Class struct {
 	Classid    string   `json:"classid"`
 	Classname  string   `json:"classname"`
 	Starttime  string   `json:"starttime"`
+	Usertype   string   `json:"usertype"`
 	Endtime    string   `json:"endtime"`
 	Peroid     string   `json:"peroid"`
 	Classtime  string   `json:"classtime"`
