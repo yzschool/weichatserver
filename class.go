@@ -169,7 +169,7 @@ func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	fmt.Println("GetClassByClassName classname is ", classname)
 
 	var class []Class
-	err := c.Find(bson.M{"classname": classname}).All(&class)
+	err := c.Find(bson.M{"classname": bson.M{"$regex": bson.RegEx{classname, "i"}}}).All(&class)
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Println("Failed find book: ", err)
