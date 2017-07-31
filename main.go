@@ -66,7 +66,8 @@ func main() {
 
 	router.GET("/weichat/class", GetClass)
 	router.POST("/weichat/class", CreateClass)
-	router.GET("/weichat/class/:clasid", GetClassByName)
+	router.GET("/weichat/class/:classid", GetClassByID)
+	router.GET("/weichat/classname/:classname", GetClassByName)
 	router.PUT("/weichat/class/:classid", UpdateClass)
 	router.DELETE("/weichat/class/:classid", DeleteClass)
 	router.GET("/weichat/student", GetStudent)

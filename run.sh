@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 
 go get gopkg.in/mgo.v2
 go get github.com/julienschmidt/httprouter

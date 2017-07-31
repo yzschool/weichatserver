@@ -21,6 +21,7 @@ example JSON class
   "classid":"1202434354545",
   "classname":"yz english AA",
   "starttime":"2017-07-11",
+  "usertype":"男",
   "endtime":"2017-09-11",
   "peroid":"每周三晚上",
   "classtime":"19:30-20:30",
@@ -46,6 +47,7 @@ type Class struct {
 	Classid    string   `json:"classid"`
 	Classname  string   `json:"classname"`
 	Starttime  string   `json:"starttime"`
+	Usertype   string   `json:"usertype"`
 	Endtime    string   `json:"endtime"`
 	Peroid     string   `json:"peroid"`
 	Classtime  string   `json:"classtime"`
@@ -127,14 +129,14 @@ func CreateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 }
 
-func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func GetClassByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	session := mgoSession.Copy()
 	defer session.Close()
 
-	id := ps.ByName("clasid")
+	id := ps.ByName("classid")
 
 	c := session.DB("yzschool").C("class")
-	fmt.Println("GetClassByName classid is ", id)
+	fmt.Println("GetClassByID classid is ", id)
 
 	var class Class
 	err := c.Find(bson.M{"classid": id}).One(&class)
@@ -145,6 +147,36 @@ func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	}
 
 	if class.Classid == "" {
+		ErrorWithJSON(w, "Class not found", http.StatusNotFound)
+		return
+	}
+
+	respBody, err := json.MarshalIndent(class, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
+}
+
+func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	classname := ps.ByName("classname")
+
+	c := session.DB("yzschool").C("class")
+	fmt.Println("GetClassByClassName classname is ", classname)
+
+	var class []Class
+	err := c.Find(bson.M{"classname": classname}).All(&class)
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed find book: ", err)
+		return
+	}
+
+	if class[0].Classname == "" {
 		ErrorWithJSON(w, "Class not found", http.StatusNotFound)
 		return
 	}
