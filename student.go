@@ -4,7 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+
 	"github.com/julienschmidt/httprouter"
+	uuid "github.com/nu7hatch/gouuid"
 )
 
 /*
@@ -52,6 +56,60 @@ func GetStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
 }
 
+func GetStudentByName(name string, phone string) string {
+
+	fmt.Println("Get student by Name:" + name + " phone " + phone)
+	session := mgoSession.Copy()
+	defer session.Close()
+	var student Student
+	c := session.DB("yzschool").C("student")
+
+	iter := c.Find(bson.M{"name": name}).Iter()
+	for iter.Next(&student) {
+		fmt.Println("Found student name " + student.Name + " phone " + student.Phone)
+
+		if student.Phone == phone {
+			fmt.Println("found student id:", student.Studentid)
+			return student.Studentid
+		}
+	}
+
+	fmt.Println("not found student")
+	return ""
+
+}
+
 func CreateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+}
+
+func add_student(student Student) string {
+	fmt.Println("add student to DB")
+
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("student")
+
+	/* generate UUID for the student ID */
+	u4, err := uuid.NewV4()
+	if err != nil {
+		fmt.Println("error:", err)
+		return ""
+	}
+	student.Studentid = u4.String()
+
+	err = c.Insert(student)
+	if err != nil {
+		if mgo.IsDup(err) {
+			fmt.Println("duplicated student id")
+			return ""
+		}
+
+		fmt.Println("Data base err")
+		return ""
+	}
+
+	return student.Studentid
+
 }

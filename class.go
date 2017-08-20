@@ -172,7 +172,7 @@ func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	err := c.Find(bson.M{"classname": bson.M{"$regex": bson.RegEx{classname, "i"}}}).All(&class)
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
-		log.Println("Failed find book: ", err)
+		log.Println("Failed find class: ", err)
 		return
 	}
 
@@ -195,30 +195,59 @@ func UpdateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	id := ps.ByName("classid")
 
-	var class Class
+	var student Student
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&class)
+	err := decoder.Decode(&student)
 	if err != nil {
 		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
 		return
 	}
 
-	c := session.DB("yzschool").C("class")
+	var studentID string
+	studentID = GetStudentByName(student.Name, student.Phone)
+	if studentID == "" {
+		studentID = add_student(student)
+	}
 
-	err = c.Update(bson.M{"classid": id}, &class)
+	var class Class
+	c := session.DB("yzschool").C("class")
+	err = c.Find(bson.M{"classid": id}).One(&class)
 	if err != nil {
-		switch err {
-		default:
-			ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
-			log.Println("Failed update book: ", err)
-			return
-		case mgo.ErrNotFound:
-			ErrorWithJSON(w, "Book not found", http.StatusNotFound)
-			return
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		fmt.Println("Failed find class: ", err)
+		return
+	}
+
+	//fmt.Println("find class: ", err)
+	//fmt.Println("student id size is : ", len(class.Studentsid))
+	registered := false
+	for _, value := range class.Studentsid {
+		if value == studentID {
+			registered = true
 		}
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	if registered == false {
+		new_id := append(class.Studentsid, studentID)
+		class.Studentsid = new_id
+
+		err = c.Update(bson.M{"classid": id}, &class)
+		if err != nil {
+			switch err {
+			default:
+				ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+				log.Println("Failed update book: ", err)
+				return
+			case mgo.ErrNotFound:
+				ErrorWithJSON(w, "Class not found", http.StatusNotFound)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+	} else {
+		w.WriteHeader(http.StatusAlreadyReported)
+	}
 }
 
 func DeleteClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
