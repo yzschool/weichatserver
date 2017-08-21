@@ -194,6 +194,7 @@ func UpdateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer session.Close()
 
 	id := ps.ByName("classid")
+	fmt.Println("classid is: " + id)
 
 	var student Student
 	decoder := json.NewDecoder(r.Body)

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	mgo "gopkg.in/mgo.v2"
@@ -53,7 +55,54 @@ type Student struct {
 }
 
 func GetStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("student")
+
+	var student []Student
+	err := c.Find(bson.M{}).All(&student)
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed get all student: ", err)
+		return
+	}
+
+	respBody, err := json.MarshalIndent(student, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
+
+}
+func HTTPGetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("student")
+	studentname := ps.ByName("studentname")
+	fmt.Println("student name is ", studentname)
+
+	var student []Student
+	err := c.Find(bson.M{"name": bson.M{"$regex": bson.RegEx{studentname, "i"}}}).All(&student)
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed find student: ", err)
+		return
+	}
+
+	if student[0].Name == "" {
+		ErrorWithJSON(w, "student not found", http.StatusNotFound)
+		return
+	}
+
+	respBody, err := json.MarshalIndent(student, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
 func GetStudentByName(name string, phone string) string {
@@ -80,7 +129,39 @@ func GetStudentByName(name string, phone string) string {
 }
 
 func CreateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+	session := mgoSession.Copy()
+	defer session.Close()
+	c := session.DB("yzschool").C("student")
+
+	var student Student
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&student)
+	if err != nil {
+		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
+		return
+	}
+
+	/* generate UUID for the student ID */
+	u4, err := uuid.NewV4()
+	if err != nil {
+		fmt.Println("error:", err)
+		return
+	}
+	student.Studentid = u4.String()
+
+	err = c.Insert(student)
+	if err != nil {
+		if mgo.IsDup(err) {
+			ErrorWithJSON(w, "student with this classid already exists", http.StatusBadRequest)
+			return
+		}
+
+		ErrorWithJSON(w, "student with this classid already exists", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 }
 
 func add_student(student Student) string {

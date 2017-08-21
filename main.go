@@ -72,6 +72,7 @@ func main() {
 	router.DELETE("/weichat/class/:classid", DeleteClass)
 	router.GET("/weichat/student", GetStudent)
 	router.POST("/weichat/student", CreateStudent)
+	router.GET("/weichat/studentname/:studentname", HTTPGetClassByName)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router))
 }
