@@ -141,6 +141,16 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 
+	var result Student
+	iter := c.Find(bson.M{"name": student.Name}).Iter()
+	for iter.Next(&result) {
+		//fmt.Println("Found student name " + result.Name + " phone " + result.Phone)
+		if result.Phone == student.Phone {
+			ErrorWithJSON(w, "student "+student.Name+" phone "+student.Phone+" already exists", http.StatusBadRequest)
+			return
+		}
+	}
+
 	/* generate UUID for the student ID */
 	u4, err := uuid.NewV4()
 	if err != nil {
