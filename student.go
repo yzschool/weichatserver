@@ -44,7 +44,11 @@ type Student struct {
 	School        string `json:"school"`
 	Grade         string `json:"grade"`
 	Capibility    string `json:"capibility"`
-	Address       string `json:"address"`
+	/*Address       string `json:"address"`*/
+	Usertype      string `json:"usertype"`
+	City          string `json:"city"`
+	District      string `json:"district"`
+	Building      string `json:"building"`
 	Mothername    string `json:"mothername"`
 	Motherphone   string `json:"motherphone"`
 	Motheropenid  string `json:"motheropenid"`
