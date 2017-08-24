@@ -73,6 +73,7 @@ func main() {
 	router.GET("/weichat/student", GetStudent)
 	router.POST("/weichat/student", CreateStudent)
 	router.GET("/weichat/studentname/:studentname", HTTPGetClassByName)
+	router.GET("/weichat/student/:studentid", HTTPGetStudentById)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router))
 }

@@ -109,6 +109,37 @@ func HTTPGetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
+
+func HTTPGetStudentById(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("student")
+	studentid := ps.ByName("studentid")
+	fmt.Println("student id is ", studentid)
+
+	var student Student
+	err := c.Find(bson.M{"studentid": studentid}).One(&student)
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed find student: ", err)
+		return
+	}
+
+	if student.Studentid == "" {
+		ErrorWithJSON(w, "student not found", http.StatusNotFound)
+		return
+	}
+
+	respBody, err := json.MarshalIndent(student, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
+}
+
+
 func GetStudentByName(name string, phone string) string {
 
 	fmt.Println("Get student by Name:" + name + " phone " + phone)
