@@ -194,6 +194,8 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 	student.Studentid = u4.String()
 
+	
+	fmt.Println("add student: " + student.Studentid)
 	err = c.Insert(student)
 	if err != nil {
 		if mgo.IsDup(err) {
@@ -225,6 +227,7 @@ func add_student(student Student) string {
 	}
 	student.Studentid = u4.String()
 
+	fmt.Println("add student: " + student.Studentid)
 	err = c.Insert(student)
 	if err != nil {
 		if mgo.IsDup(err) {

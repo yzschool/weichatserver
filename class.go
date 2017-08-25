@@ -219,8 +219,6 @@ func UpdateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	//fmt.Println("find class: ", err)
-	//fmt.Println("student id size is : ", len(class.Studentsid))
 	registered := false
 	for _, value := range class.Studentsid {
 		if value == studentID {
@@ -229,6 +227,7 @@ func UpdateClass(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	if registered == false {
+		fmt.Println("add class: " + id +" student: " + studentID )
 		new_id := append(class.Studentsid, studentID)
 		class.Studentsid = new_id
 
