@@ -170,9 +170,8 @@ func GetClassByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 
 	var class []Class
 	err := c.Find(bson.M{"classname": bson.M{"$regex": bson.RegEx{classname, "i"}}}).All(&class)
-	if err != nil {
+	if err != nil  || class == nil{	
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
-		log.Println("Failed find class: ", err)
 		return
 	}
 
