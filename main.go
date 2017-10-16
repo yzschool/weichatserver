@@ -73,7 +73,22 @@ func main() {
 	router.GET("/weichat/student", GetStudent)
 	router.POST("/weichat/student", CreateStudent)
 	router.GET("/weichat/studentname/:studentname", HTTPGetClassByName)
-	router.GET("/weichat/student/:studentid", HTTPGetStudentById)
+
+	/* code for library book management */
+	/* List all the book in the library */
+	router.GET("/weichat/books", GetAllBook)
+	/* add book to the library */
+	router.POST("/weichat/book", CreateBook)
+	/* Change book status, when some borrow it */
+	router.PUT("/weichat/book", UpdateBook)
+	/* Remove book from the library */
+	router.DELETE("/weichat/book", DeleteBook)
+	/* Query book by ISBN */
+	router.GET("/weichat/book/isbn/:isbn", GetBookByISBN)
+	/* Query book by Name */
+	router.GET("/weichat/book/name/:name", GetBookByName)
+	/* Query book by ID */
+	router.GET("/weichat/book/id/:id", GetBookByID)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router))
 }
