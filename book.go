@@ -95,10 +95,10 @@ func UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer session.Close()
 	c := session.DB("yzschool").C("library")
 
-/*
-	id := ps.ByName("id")
-	fmt.Println("id is: " + id)
-*/
+	/*
+		id := ps.ByName("id")
+		fmt.Println("id is: " + id)
+	*/
 	var book Book
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&book)
@@ -110,40 +110,39 @@ func UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var book_database Book
 	err = c.Find(bson.M{"id": book.ID}).All(&book_database)
 
-	book_database.Borrowname = book.Borrowname;
+	book_database.Borrowname = book.Borrowname
 	c.Update(book_database, &book)
 
-
-/* TODO
- update 	Borrowname	Updatetime 
-*/
+	/* TODO
+	   update 	Borrowname	Updatetime
+	*/
 
 }
 
 /* Remove book from the library */
 func DeleteBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	/*
-    session := mgoSession.Copy()
-	defer session.Close()
+		    session := mgoSession.Copy()
+			defer session.Close()
 
-	id := ps.ByName("isbn")
+			id := ps.ByName("isbn")
 
-	c := session.DB("yzschool").C("library")
+			c := session.DB("yzschool").C("library")
 
-	err := c.Remove(bson.M{"isbn": id})
-	if err != nil {
-		switch err {
-		default:
-			ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
-			log.Println("Failed delete book: ", err)
-			return
-		case mgo.ErrNotFound:
-			ErrorWithJSON(w, "Book not found", http.StatusNotFound)
-			return
-		}
-	}
+			err := c.Remove(bson.M{"isbn": id})
+			if err != nil {
+				switch err {
+				default:
+					ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+					log.Println("Failed delete book: ", err)
+					return
+				case mgo.ErrNotFound:
+					ErrorWithJSON(w, "Book not found", http.StatusNotFound)
+					return
+				}
+			}
 
-	w.WriteHeader(http.StatusNoContent)
+			w.WriteHeader(http.StatusNoContent)
 	*/
 }
 
@@ -159,7 +158,7 @@ func GetBookByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 	c := session.DB("yzschool").C("library")
 
-	bookname := ps.ByName("bookname")
+	bookname := ps.ByName("name")
 
 	var books []Book
 	err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{bookname, "i"}}}).All(&books)
