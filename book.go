@@ -60,7 +60,7 @@ func GetAllBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
-func ensureIndex(c *mgo.Collection) {
+func ensureIndex_lib(c *mgo.Collection) {
 
 	index := mgo.Index{
 		Key:        []string{"id"},
@@ -92,7 +92,7 @@ func CreateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	book.Updatetime = time.Now().Format("2006-01-02 3:4:5 PM")
 
 	c := session.DB("yzschool").C("library")
-	ensureIndex(c)
+	ensureIndex_lib(c)
 
 	err = c.Insert(book)
 	if err != nil {
@@ -106,7 +106,7 @@ func CreateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	//w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
 }
@@ -115,7 +115,7 @@ func UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	session := mgoSession.Copy()
 	defer session.Close()
 	c := session.DB("yzschool").C("library")
-	ensureIndex(c)
+	ensureIndex_lib(c)
 
 	var book Book
 	decoder := json.NewDecoder(r.Body)
