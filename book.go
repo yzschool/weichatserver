@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"time"
 	//"fmt"
 	"log"
 	"net/http"
@@ -58,6 +60,23 @@ func GetAllBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
+func ensureIndex(c *mgo.Collection) {
+
+	index := mgo.Index{
+		Key:        []string{"id"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := c.EnsureIndex(index)
+	if err != nil {
+		fmt.Println("EnsureIndex in mongodb failure", err)
+		panic(err)
+	}
+}
+
 /* add book to the library */
 func CreateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	session := mgoSession.Copy()
@@ -70,13 +89,15 @@ func CreateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
 		return
 	}
+	book.Updatetime = time.Now().Format("2006-01-02 3:4:5 PM")
 
 	c := session.DB("yzschool").C("library")
+	ensureIndex(c)
 
 	err = c.Insert(book)
 	if err != nil {
 		if mgo.IsDup(err) {
-			ErrorWithJSON(w, "Class with this classid already exists", http.StatusBadRequest)
+			ErrorWithJSON(w, "book with this id already exists", http.StatusBadRequest)
 			return
 		}
 
@@ -94,11 +115,8 @@ func UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	session := mgoSession.Copy()
 	defer session.Close()
 	c := session.DB("yzschool").C("library")
+	ensureIndex(c)
 
-	/*
-		id := ps.ByName("id")
-		fmt.Println("id is: " + id)
-	*/
 	var book Book
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&book)
@@ -106,17 +124,21 @@ func UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
 		return
 	}
+	//log.Println("Book info from user : " + book.ID + book.Bookname + book.Borrowname)
 
-	var book_database Book
-	err = c.Find(bson.M{"id": book.ID}).All(&book_database)
+	query := bson.M{"id": book.ID}
 
-	book_database.Borrowname = book.Borrowname
-	c.Update(book_database, &book)
+	update := bson.M{"$set": bson.M{"borrowname": book.Borrowname, "updatetime": time.Now().Format("2006-01-02 3:4:5 PM")}}
 
-	/* TODO
-	   update 	Borrowname	Updatetime
-	*/
+	err = c.Update(query, update)
 
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed insert book: ", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
 
 /* Remove book from the library */
@@ -160,16 +182,17 @@ func GetBookByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 	bookname := ps.ByName("name")
 
-	var books []Book
-	err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{bookname, "i"}}}).All(&books)
+	var book Book
+	err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{bookname, "i"}}}).One(&book)
 	if err != nil {
-		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		ErrorWithJSON(w, "Can not found the id in the database!", http.StatusNotFound)
 		log.Println("Failed get all classes: ", err)
 		return
 	}
 
-	respBody, err := json.MarshalIndent(books, "", "  ")
+	respBody, err := json.MarshalIndent(book, "", "  ")
 	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 
@@ -185,16 +208,17 @@ func GetBookByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	id := ps.ByName("id")
 
-	var books []Book
-	err := c.Find(bson.M{"id": id}).All(&books)
+	var book Book
+	err := c.Find(bson.M{"id": id}).One(&book)
 	if err != nil {
-		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
-		log.Println("Failed get all classes: ", err)
+		ErrorWithJSON(w, "Can not found the id in the database!", http.StatusNotFound)
+		//log.Println("Failed get all classes: ", err)
 		return
 	}
 
-	respBody, err := json.MarshalIndent(books, "", "  ")
+	respBody, err := json.MarshalIndent(book, "", "  ")
 	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Fatal(err)
 	}
 

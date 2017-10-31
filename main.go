@@ -32,7 +32,7 @@ func ensureIndex(s *mgo.Session) {
 	session := s.Copy()
 	defer session.Close()
 
-	c := session.DB("yzschool").C("class")
+	conn_class := session.DB("yzschool").C("class")
 
 	index := mgo.Index{
 		Key:        []string{"classid"},
@@ -41,7 +41,7 @@ func ensureIndex(s *mgo.Session) {
 		Background: true,
 		Sparse:     true,
 	}
-	err := c.EnsureIndex(index)
+	err := conn_class.EnsureIndex(index)
 	if err != nil {
 		fmt.Println("EnsureIndex in mongodb failure", err)
 		panic(err)
