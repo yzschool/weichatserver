@@ -143,29 +143,34 @@ func UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 /* Remove book from the library */
 func DeleteBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	/*
-		    session := mgoSession.Copy()
-			defer session.Close()
+	session := mgoSession.Copy()
+	defer session.Close()
+	c := session.DB("yzschool").C("library")
+	ensureIndex_lib(c)
 
-			id := ps.ByName("isbn")
+	var book Book
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&book)
+	if err != nil {
+		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
+		return
+	}
+	//log.Println("Book info from user : " + book.ID + book.Bookname + book.Borrowname)
 
-			c := session.DB("yzschool").C("library")
+	err = c.Remove(bson.M{"id": book.ID})
+	if err != nil {
+		switch err {
+		default:
+			ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+			log.Println("Failed delete book: ", err)
+			return
+		case mgo.ErrNotFound:
+			ErrorWithJSON(w, "Book not found", http.StatusNotFound)
+			return
+		}
+	}
 
-			err := c.Remove(bson.M{"isbn": id})
-			if err != nil {
-				switch err {
-				default:
-					ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
-					log.Println("Failed delete book: ", err)
-					return
-				case mgo.ErrNotFound:
-					ErrorWithJSON(w, "Book not found", http.StatusNotFound)
-					return
-				}
-			}
-
-			w.WriteHeader(http.StatusNoContent)
-	*/
+	w.WriteHeader(http.StatusNoContent)
 }
 
 /* Query book by ISBN */
