@@ -227,5 +227,16 @@ func GetBookByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		log.Fatal(err)
 	}
 
+	//add the [] to the json file.
+	//println("the first char is %s", respBody[0])
+	if respBody[0] != '[' {
+		respBody = append(respBody, 0)
+		copy(respBody[1:], respBody[0:])
+		respBody[0] = byte('[')
+
+		// append ']'
+		respBody = append(respBody, ']')
+	}
+
 	ResponseWithJSON(w, respBody, http.StatusOK)
 }
