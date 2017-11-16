@@ -75,6 +75,8 @@ func main() {
 	router.GET("/weichat/studentname/:studentname", HTTPGetClassByName)
 
 	/* code for library book management */
+	/* List all the admin in the library */
+	router.GET("/weichat/book_admin", GetAllAdmin)
 	/* List all the book in the library */
 	router.GET("/weichat/books", GetAllBook)
 	/* add book to the library */

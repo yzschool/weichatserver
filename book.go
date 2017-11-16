@@ -14,6 +14,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+
+
 /*
 example JSON class
 {
@@ -26,6 +28,7 @@ example JSON class
 }
 */
 
+
 /*Class is GO struct for Class JSON */
 type Book struct {
 	ID         string `json:"id"`
@@ -34,6 +37,42 @@ type Book struct {
 	Borrowname string `json:"borrowname"`
 	Location   string `json:"location"`
 	Updatetime string `json:"updatetime"`
+}
+/*
+example JSON admin
+{
+  "name":"yz",
+  "password":"123",
+  "location":"乔希家"
+}
+*/
+
+type Admin struct {
+	Name       string `json:"name"`
+	Password   string `json:"password"`
+	Location   string `json:"location"`
+}
+
+func GetAllAdmin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("admin")
+
+	var admins []Admin
+	err := c.Find(bson.M{}).All(&admins)
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed get all admins: ", err)
+		return
+	}
+
+	respBody, err := json.MarshalIndent(admins, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
 /* List all the book in the library */
