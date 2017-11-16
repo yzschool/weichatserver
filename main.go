@@ -88,9 +88,9 @@ func main() {
 	/* Query book by ISBN */
 	router.GET("/weichat/book/isbn/:isbn", GetBookByISBN)
 	/* Query book by Name */
-	router.GET("/weichat/book/name/:name", GetBookByName)
+	router.POST("/weichat/book/name", GetBookByName)
 	/* Query book by ID */
-	router.GET("/weichat/book/id/:id", GetBookByID)
+	router.POST("/weichat/book/id", GetBookByID)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router))
 }

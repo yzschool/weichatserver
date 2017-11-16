@@ -224,17 +224,24 @@ func GetBookByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 	c := session.DB("yzschool").C("library")
 
-	bookname := ps.ByName("name")
-
 	var book Book
-	err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{bookname, "i"}}}).One(&book)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&book)
+	if err != nil {
+		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
+		return
+	}
+
+	var books []Book
+	err = c.Find(bson.M{"location": book.Location, "bookname": bson.M{"$regex": bson.RegEx{book.Bookname, "i"}}}).All(&books)
+	//err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{book.name, "i"}}}).All(&books)
 	if err != nil {
 		ErrorWithJSON(w, "Can not found the id in the database!", http.StatusNotFound)
 		log.Println("Failed get all classes: ", err)
 		return
 	}
 
-	respBody, err := json.MarshalIndent(book, "", "  ")
+	respBody, err := json.MarshalIndent(books, "", "  ")
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Fatal(err)
@@ -250,10 +257,16 @@ func GetBookByID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	c := session.DB("yzschool").C("library")
 
-	id := ps.ByName("id")
+	var book_req Book
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&book_req)
+	if err != nil {
+		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
+		return
+	}
 
 	var book Book
-	err := c.Find(bson.M{"id": id}).One(&book)
+	err = c.Find(bson.M{"location": book_req.Location, "id": book_req.ID}).One(&book)
 	if err != nil {
 		ErrorWithJSON(w, "Can not found the id in the database!", http.StatusNotFound)
 		//log.Println("Failed get all classes: ", err)
