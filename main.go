@@ -78,7 +78,7 @@ func main() {
 	/* List all the admin in the library */
 	router.GET("/weichat/book_admin", GetAllAdmin)
 	/* List all the book in the library */
-	router.GET("/weichat/books", GetAllBook)
+	router.POST("/weichat/books", GetAllBook)
 	/* add book to the library */
 	router.POST("/weichat/book", CreateBook)
 	/* Change book status, when some borrow it */

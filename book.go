@@ -83,8 +83,18 @@ func GetAllBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	c := session.DB("yzschool").C("library")
 
+	var book Book
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&book)
+	if err != nil {
+		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
+		return
+	}
+
 	var books []Book
-	err := c.Find(bson.M{}).All(&books)
+	err = c.Find(bson.M{"location": book.Location, {}}).All(&books)
+	//err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{book.name, "i"}}}).All(&books)
+	//err = c.Find(bson.M{}).All(&books)
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Println("Failed get all classes: ", err)
