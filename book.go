@@ -92,7 +92,7 @@ func GetAllBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	var books []Book
-	err = c.Find(bson.M{"location": book.Location, {}}).All(&books)
+	err = c.Find(bson.M{"location": book.Location}).All(&books)
 	//err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{book.name, "i"}}}).All(&books)
 	//err = c.Find(bson.M{}).All(&books)
 	if err != nil {
