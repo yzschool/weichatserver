@@ -246,7 +246,7 @@ func GetBookByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	var books []Book
 	err = c.Find(bson.M{"location": book.Location, "bookname": bson.M{"$regex": bson.RegEx{book.Bookname, "i"}}}).All(&books)
 	//err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{book.name, "i"}}}).All(&books)
-	if err != nil {
+	if err != nil || len(books) == 0 {
 		ErrorWithJSON(w, "Can not found the id in the database!", http.StatusNotFound)
 		log.Println("Failed get all classes: ", err)
 		return
@@ -256,8 +256,10 @@ func GetBookByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Fatal(err)
+		return
 	}
 
+log.Println("debug: 5")
 	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
