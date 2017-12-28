@@ -14,8 +14,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-
-
 /*
 example JSON class
 {
@@ -28,16 +26,16 @@ example JSON class
 }
 */
 
-
 /*Class is GO struct for Class JSON */
 type Book struct {
-	ID         string `json:"id"`
-	Bookname   string `json:"bookname"`
-	Isbn       string `json:"isbn"`
-	Borrowname string `json:"borrowname"`
-	Location   string `json:"location"`
-	Updatetime string `json:"updatetime"`
+	ID         string `json:"id,omitempty"`
+	Bookname   string `json:"bookname,omitempty"`
+	Isbn       string `json:"isbn,omitempty"`
+	Borrowname string `json:"borrowname,omitempty"`
+	Location   string `json:"location,omitempty"`
+	Updatetime string `json:"updatetime,omitempty"`
 }
+
 /*
 example JSON admin
 {
@@ -48,9 +46,9 @@ example JSON admin
 */
 
 type Admin struct {
-	Name       string `json:"name"`
-	Password   string `json:"password"`
-	Location   string `json:"location"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Location string `json:"location"`
 }
 
 func GetAllAdmin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -86,6 +84,7 @@ func GetAllBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var book Book
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&book)
+
 	if err != nil {
 		ErrorWithJSON(w, "Incorrect body", http.StatusBadRequest)
 		return
@@ -98,6 +97,11 @@ func GetAllBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	//err = c.Find(bson.M{}).All(&books)
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Println("Failed get all classes: ", err)
+		return
+	}
+	if len(books) == 0 {
+		ErrorWithJSON(w, "Can't find book in this location", http.StatusInternalServerError)
 		log.Println("Failed get all classes: ", err)
 		return
 	}
@@ -244,11 +248,18 @@ func GetBookByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 
 	var books []Book
-	err = c.Find(bson.M{"location": book.Location, "bookname": bson.M{"$regex": bson.RegEx{book.Bookname, "i"}}}).All(&books)
+	if book.Bookname != "" {
+		//log.Println(bson.M{"location": book.Location, "bookname": bson.M{"$regex": bson.RegEx{book.Bookname, "i"}}})
+		err = c.Find(bson.M{"location": book.Location, "bookname": bson.M{"$regex": bson.RegEx{book.Bookname, "i"}}}).All(&books)
+	} else if book.Borrowname != "" {
+		//log.Println(bson.M{"location": book.Location, "borrowname": bson.M{"$regex": bson.RegEx{book.Borrowname, "i"}}})
+		err = c.Find(bson.M{"location": book.Location, "borrowname": bson.M{"$regex": bson.RegEx{book.Borrowname, "i"}}}).All(&books)
+	}
+
 	//err := c.Find(bson.M{"bookname": bson.M{"$regex": bson.RegEx{book.name, "i"}}}).All(&books)
 	if err != nil || len(books) == 0 {
 		ErrorWithJSON(w, "Can not found the id in the database!", http.StatusNotFound)
-		log.Println("Failed get all classes: ", err)
+		//log.Println("GetBookByName: ", err)
 		return
 	}
 
@@ -259,7 +270,6 @@ func GetBookByName(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		return
 	}
 
-log.Println("debug: 5")
 	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
