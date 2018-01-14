@@ -92,5 +92,15 @@ func main() {
 	/* Query book by ID */
 	router.POST("/weichat/book/id", GetBookByID)
 
+	/* recruit API */
+	/* candidate API */
+	router.POST("/recruit/submitappliation", SubmitApplication)
+	router.POST("/recruit/getcandidate", GetCandidate)
+	router.GET("/recruit/getallcandidate", GetAllCandidate)
+	/* exam API */
+	router.POST("/recruit/submitexam", SubmitExam)
+	router.POST("/recruit/getexam", GetExam)
+	router.GET("/recruit/getallexam", GetAllExam)
+
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router))
 }
