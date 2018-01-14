@@ -97,10 +97,12 @@ func main() {
 	router.POST("/recruit/submitappliation", SubmitApplication)
 	router.POST("/recruit/getcandidate", GetCandidate)
 	router.GET("/recruit/getallcandidate", GetAllCandidate)
+	router.GET("/recruit/getallcandidatetable", GetAllCandidateDataTable)
 	/* exam API */
 	router.POST("/recruit/submitexam", SubmitExam)
 	router.POST("/recruit/getexam", GetExam)
 	router.GET("/recruit/getallexam", GetAllExam)
+	router.GET("/recruit/getallexamtable", GetAllExamDataTable)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router))
 }

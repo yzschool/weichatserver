@@ -32,6 +32,10 @@ import (
 }
 */
 
+type CandidateDataTable struct {
+	Data []Candidate `json:"data"`
+}
+
 type Candidate struct {
 	Name            string `json:"name"`
 	Gender          string `json:"gender"`
@@ -70,6 +74,11 @@ type Candidate struct {
   "updatetime": "2018"
 }
 */
+
+type ExamDataTable struct {
+	Data []Exam `json:"data"`
+}
+
 type Exam struct {
 	Exam      string `json:"exam"`
 	Tester    string `json:"tester"`
@@ -146,6 +155,33 @@ func GetCandidate(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		return
 	}
 
+	ResponseWithJSON(w, respBody, http.StatusOK)
+}
+
+func GetAllCandidateDataTable(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("candidate")
+
+	var dbCdds []Candidate
+	err := c.Find(bson.M{}).All(&dbCdds)
+
+	if err != nil || len(dbCdds) == 0 {
+		ErrorWithJSON(w, "Can not found in the database!", http.StatusNotFound)
+		return
+	}
+
+	var data CandidateDataTable
+	data.Data = dbCdds
+
+	respBody, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Fatal(err)
+		return
+	}
+	
 	ResponseWithJSON(w, respBody, http.StatusOK)
 }
 
@@ -256,6 +292,33 @@ func GetAllExam(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	respBody, err := json.MarshalIndent(dbExams, "", "  ")
+	if err != nil {
+		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+		log.Fatal(err)
+		return
+	}
+
+	ResponseWithJSON(w, respBody, http.StatusOK)
+}
+
+
+func GetAllExamDataTable(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	session := mgoSession.Copy()
+	defer session.Close()
+
+	c := session.DB("yzschool").C("exam")
+
+	var dbExams []Exam
+	err := c.Find(bson.M{}).All(&dbExams)
+
+	if err != nil || len(dbExams) == 0 {
+		ErrorWithJSON(w, "Can not found in the database!", http.StatusNotFound)
+		return
+	}
+
+	var data ExamDataTable
+	data.Data = dbExams
+	respBody, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Fatal(err)
