@@ -94,7 +94,7 @@ func main() {
 
 	/* recruit API */
 	/* candidate API */
-	router.POST("/recruit/submitappliation", SubmitApplication)
+	router.POST("/recruit/submitapplication", SubmitApplication)
 	router.POST("/recruit/getcandidate", GetCandidate)
 	router.GET("/recruit/getallcandidate", GetAllCandidate)
 	router.GET("/recruit/getallcandidatetable", GetAllCandidateDataTable)

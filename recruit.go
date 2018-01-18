@@ -94,12 +94,12 @@ type Exam struct {
 
 /*SubmitApplication application submit application form */
 func SubmitApplication(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Println("SubmitApplication get request")
+	//fmt.Println("SubmitApplication get request")
 	session := mgoSession.Copy()
 	defer session.Close()
 
 	c := session.DB("yzschool").C("candidate")
-
+	
 	var cdd Candidate
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&cdd)
