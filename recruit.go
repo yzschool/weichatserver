@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/julienschmidt/httprouter"
@@ -28,9 +29,12 @@ import (
   "residence": "深圳",
   "selfintroduce": "我是...",
   "jobdecription": "英语教师...",
+  "referrer_tel": "13900000000",
+  "referrer_count": 1,
   "updatetime": "2018"
 }
 */
+
 
 type CandidateDataTable struct {
 	Data []Candidate `json:"data"`
@@ -51,6 +55,8 @@ type Candidate struct {
 	Residence       string `json:"residence"`
 	Selfintroduce   string `json:"selfintroduce"`
 	Jobdecription   string `json:"jobdecription"`
+	Referrertel     string `json:"referrer_tel"`
+	Referrercount   int    `json:"referrer_count"`
 	Updatetime      string `json:"updatetime"`
 }
 
@@ -74,6 +80,23 @@ type Candidate struct {
   "updatetime": "2018"
 }
 */
+
+func ensureIndex_tel(c *mgo.Collection) {
+
+	index := mgo.Index{
+		Key:        []string{"telephone"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := c.EnsureIndex(index)
+	if err != nil {
+		fmt.Println("EnsureIndex in mongodb failure", err)
+		panic(err)
+	}
+}
 
 type ExamDataTable struct {
 	Data []Exam `json:"data"`
@@ -99,7 +122,8 @@ func SubmitApplication(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	defer session.Close()
 
 	c := session.DB("yzschool").C("candidate")
-	
+	ensureIndex_tel(c)
+
 	var cdd Candidate
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&cdd)
@@ -111,6 +135,11 @@ func SubmitApplication(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 	err = c.Insert(cdd)
 	if err != nil {
+		if mgo.IsDup(err) {
+			ErrorWithJSON(w, "The telphone number already exists", http.StatusBadRequest)
+			return
+		}
+
 		ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
 		log.Println("Failed insert candidate: ", err)
 		return

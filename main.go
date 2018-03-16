@@ -103,6 +103,14 @@ func main() {
 	router.POST("/recruit/getexam", GetExam)
 	router.GET("/recruit/getallexam", GetAllExam)
 	router.GET("/recruit/getallexamtable", GetAllExamDataTable)
+	/* partner API */
+	router.POST("/recruit/submitpartner", SubmitPartnerApplication)		
+	router.GET("/recruit/getallpartner", GetAllPartner)
+	router.GET("/recruit/getallpartnertable", GetAllPartnerDataTable)
+	/* Course Application API */
+	router.POST("/recruit/submitcourseapp", SubmitCourseApplication)		
+	router.GET("/recruit/getallcourseapp", GetAllCourseApplication)
+	router.GET("/recruit/getallcourseapptable", GetAllCourseApplicationDataTable)
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", router))
 }
